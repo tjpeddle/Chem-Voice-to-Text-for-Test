@@ -214,6 +214,123 @@ h1 {
 .ref-formula sub { font-size: 0.6rem; }
 .ref-formula sup { font-size: 0.6rem; color: var(--purple); }
 
+/* ===================== QUIZ MODE ===================== */
+.quiz-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+.quiz-score-bar { display: flex; gap: 16px; }
+.score-pill {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 20px; padding: 5px 14px; font-size: 0.82rem;
+  display: flex; align-items: center; gap: 6px;
+}
+.score-val { font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+.score-val.green { color: var(--accent2); }
+.score-val.red { color: var(--accent3); }
+.score-val.blue { color: var(--accent); }
+
+.quiz-difficulty { display: flex; gap: 6px; margin-bottom: 20px; }
+.diff-btn {
+  padding: 6px 16px; border-radius: 20px; border: 1px solid var(--border);
+  background: transparent; color: var(--muted); font-family: 'Outfit', sans-serif;
+  font-size: 0.82rem; cursor: pointer; transition: all 0.2s;
+}
+.diff-btn.active { border-color: var(--accent4); color: var(--accent4); background: rgba(255,209,102,0.08); }
+
+.quiz-card {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 14px; padding: 32px; text-align: center; margin-bottom: 20px;
+  position: relative; overflow: hidden;
+}
+.quiz-card::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 0%, rgba(0,212,255,0.05), transparent 70%);
+  pointer-events: none;
+}
+
+.quiz-prompt-label {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.68rem;
+  color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px;
+}
+.quiz-formula {
+  font-family: 'JetBrains Mono', monospace; font-size: 3rem; font-weight: 700;
+  color: var(--accent); margin-bottom: 8px;
+  text-shadow: 0 0 30px rgba(0,212,255,0.4);
+}
+.quiz-formula sub { font-size: 1.8rem; color: var(--accent2); }
+.quiz-formula sup { font-size: 1.6rem; color: var(--purple); }
+.quiz-hint { color: var(--muted); font-size: 0.85rem; margin-bottom: 20px; min-height: 20px; }
+
+.quiz-answer-area {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  padding: 14px 18px; min-height: 52px; font-size: 1rem;
+  color: var(--muted); font-style: italic; margin-bottom: 16px;
+  text-align: center; transition: border-color 0.2s;
+}
+.quiz-answer-area.has-text { color: var(--text); font-style: normal; }
+
+.quiz-result {
+  border-radius: 10px; padding: 16px 20px; margin-bottom: 16px;
+  font-size: 1rem; font-weight: 500; display: none; align-items: center;
+  gap: 12px; text-align: left;
+}
+.quiz-result.correct { background: rgba(0,255,157,0.1); border: 1px solid var(--accent2); color: var(--accent2); }
+.quiz-result.wrong { background: rgba(255,107,107,0.1); border: 1px solid var(--accent3); color: var(--accent3); }
+.quiz-result.show { display: flex; }
+.result-icon { font-size: 1.5rem; }
+.result-detail { font-size: 0.85rem; opacity: 0.8; margin-top: 3px; font-weight: 400; }
+
+.quiz-btn-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.quiz-mic-btn {
+  width: 70px; height: 70px; border-radius: 50%;
+  border: 2px solid var(--accent4); background: transparent;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  font-size: 30px; transition: all 0.25s; margin: 0 auto 14px;
+}
+.quiz-mic-btn:hover { background: rgba(255,209,102,0.08); transform: scale(1.05); }
+.quiz-mic-btn.recording {
+  border-color: var(--accent3); animation: pulse-rec 1.2s ease-in-out infinite;
+  background: rgba(255,107,107,0.08);
+}
+
+.quiz-progress {
+  background: var(--surface2); border-radius: 100px;
+  height: 4px; margin-bottom: 20px; overflow: hidden;
+}
+.quiz-progress-bar {
+  height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2));
+  border-radius: 100px; transition: width 0.4s ease;
+}
+
+.streak-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: rgba(255,209,102,0.1); border: 1px solid var(--accent4);
+  border-radius: 20px; padding: 4px 12px; font-size: 0.8rem; color: var(--accent4);
+  margin-bottom: 12px; opacity: 0; transition: opacity 0.3s;
+}
+.streak-badge.show { opacity: 1; }
+
+.quiz-end-screen {
+  text-align: center; padding: 40px 20px; display: none;
+}
+.quiz-end-screen.show { display: block; }
+.end-score {
+  font-family: 'JetBrains Mono', monospace; font-size: 4rem; font-weight: 700;
+  background: linear-gradient(135deg, var(--accent2), var(--accent));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  margin-bottom: 8px;
+}
+.end-label { color: var(--muted); font-size: 1rem; margin-bottom: 24px; }
+.end-grade {
+  font-family: 'JetBrains Mono', monospace; font-size: 1.4rem;
+  color: var(--accent4); margin-bottom: 28px;
+}
+
+/* TYPE ANSWER */
+.type-input {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  padding: 12px 18px; width: 100%; color: var(--text);
+  font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; outline: none;
+  text-align: center; transition: border-color 0.2s;
+}
 .type-input:focus { border-color: var(--accent4); }
 
 .no-support {
@@ -252,7 +369,7 @@ h1 {
   <header>
     <div class="header-top">
       <div class="logo-mark">⚗️</div>
-      <h1>ChemVoice <span style="font-size:0.82rem;color:var(--accent3);background:rgba(255,107,107,0.12);border:1px solid var(--accent3);border-radius:6px;padding:3px 10px;vertical-align:middle;font-family:'Outfit',sans-serif;font-weight:500;">TESTING MODE</span></h1>
+      <h1>ChemVoice <span style="font-size:0.82rem;color:#ff6b6b;background:rgba(255,107,107,0.12);border:1px solid #ff6b6b;border-radius:6px;padding:3px 10px;vertical-align:middle;font-family:'Outfit',sans-serif;font-weight:500;">TESTING MODE</span></h1>
     </div>
     <p class="tagline">Speak the compound name — the formula appears. Approved accommodation tool.</p>
   </header>
@@ -264,8 +381,9 @@ h1 {
   <!-- ============================================================ -->
   <!-- TAB: DICTATE                                                  -->
   <!-- ============================================================ -->
-    <div style="background:rgba(255,107,107,0.07);border:1px solid rgba(255,107,107,0.3);border-radius:10px;padding:12px 18px;margin-bottom:20px;font-size:0.83rem;color:var(--muted);">
-      🔒 <strong style="color:var(--accent3);">Testing Version</strong> — Voice conversion only. No reference list, no quiz, no history. Student must already know the compound name to use this tool.
+
+    <div style="background:rgba(255,107,107,0.07);border:1px solid rgba(255,107,107,0.3);border-radius:10px;padding:12px 18px;margin-bottom:20px;font-size:0.83rem;color:#7a8fa6;">
+      🔒 <strong style="color:#ff6b6b;">Testing Version</strong> — Voice conversion only. No reference list, no quiz, no history. Student must already know the compound name to use this tool.
     </div>
 
     <div class="card">
@@ -278,6 +396,18 @@ h1 {
       <div class="btn-row">
         <button class="btn-primary" onclick="convertAndShow()">⚗️ Convert to Formula</button>
         <button class="btn-ghost" onclick="clearDictate()">Clear</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Formula Output</div>
+      <div class="formula-output" id="formulaDisplay">
+        <span style="color:var(--muted);font-size:1rem;font-family:'Outfit',sans-serif;font-style:italic;">Formula will appear here</span>
+      </div>
+      <div class="formula-name" id="formulaName"></div>
+      <div class="btn-row">
+        <button class="btn-sm" onclick="copyFormula()">⎘ Copy</button>
+        <button class="btn-sm" onclick="speakFormula()" style="border-color:var(--accent4);color:var(--accent4);">🔊 Read Aloud</button>
       </div>
     </div>
 
@@ -457,7 +587,7 @@ function toggleRecording(target) {
     isRecording = false;
     recognition.stop();
     const btn = target === 'main' ? document.getElementById('micBtn') : document.getElementById('quizMicBtn');
-    btn.classList.remove('recording');
+    if (btn) btn.classList.remove('recording');
     if (target === 'main') {
       document.getElementById('micStatus').textContent = 'Recording stopped. Click Convert to see formula.';
       document.getElementById('micStatus').className = 'mic-status';
@@ -468,8 +598,8 @@ function toggleRecording(target) {
     isRecording = true;
     currentTranscript = '';
     recognition.start();
-    const btn = target === 'main' ? document.getElementById('micBtn') : document.getElementById('quizMicBtn');
-    btn.classList.add('recording');
+    const btn2 = target === 'main' ? document.getElementById('micBtn') : document.getElementById('quizMicBtn');
+    if (btn2) btn2.classList.add('recording');
     if (target === 'main') {
       document.getElementById('micStatus').textContent = '🔴 Listening — speak now';
       document.getElementById('micStatus').className = 'mic-status active';
