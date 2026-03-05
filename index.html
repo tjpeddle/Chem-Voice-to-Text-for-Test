@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChemVoice — Testing Mode</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080c10;
+  --surface: #0f1419;
+  --surface2: #161d26;
+  --surface3: #1e2733;
+  --border: #263040;
+  --accent: #00d4ff;
+  --accent2: #00ff9d;
+  --accent3: #ff6b6b;
+  --accent4: #ffd166;
+  --purple: #b388ff;
+  --text: #e8f0fe;
+  --muted: #7a8fa6;
+  --glow: rgba(0,212,255,0.15);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Outfit', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Animated bg */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background:
+    radial-gradient(ellipse 60% 40% at 20% 10%, rgba(0,212,255,0.05) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 30% at 80% 80%, rgba(0,255,157,0.04) 0%, transparent 60%),
+    linear-gradient(rgba(0,212,255,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,212,255,0.02) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 48px 48px, 48px 48px;
+  pointer-events: none; z-index: 0;
+}
+
+.container { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 36px 24px 80px; }
+
+/* HEADER */
+header { margin-bottom: 32px; }
+.header-top { display: flex; align-items: center; gap: 16px; margin-bottom: 6px; }
+.logo-mark {
+  width: 48px; height: 48px; border-radius: 12px;
+  background: linear-gradient(135deg, #00d4ff, #0059ff);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; box-shadow: 0 0 24px rgba(0,212,255,0.3);
+}
+h1 {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 2rem; font-weight: 700;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.tagline { color: var(--muted); font-size: 0.9rem; padding-left: 64px; }
+
+/* NAV TABS */
+.tabs {
+  display: flex; gap: 4px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 5px; margin-bottom: 28px;
+}
+.tab-btn {
+  flex: 1; padding: 10px 16px; border: none; border-radius: 8px;
+  background: transparent; color: var(--muted);
+  font-family: 'Outfit', sans-serif; font-size: 0.9rem; font-weight: 500;
+  cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.tab-btn.active {
+  background: var(--surface3); color: var(--accent);
+  box-shadow: 0 0 12px rgba(0,212,255,0.15);
+}
+.tab-btn:hover:not(.active) { color: var(--text); background: var(--surface2); }
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* CARD */
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 16px; padding: 28px; margin-bottom: 20px;
+}
+.card-title {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.7rem;
+  color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 18px;
+}
+
+/* MIC BUTTON */
+.mic-wrap { display: flex; flex-direction: column; align-items: center; margin-bottom: 20px; }
+.mic-btn {
+  width: 100px; height: 100px; border-radius: 50%;
+  border: 2px solid var(--accent); background: transparent;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  font-size: 40px; transition: all 0.25s; position: relative; margin-bottom: 14px;
+}
+.mic-btn::after {
+  content: ''; position: absolute; inset: -8px; border-radius: 50%;
+  border: 1px solid rgba(0,212,255,0.2); transition: all 0.25s;
+}
+.mic-btn:hover { background: rgba(0,212,255,0.08); transform: scale(1.05); box-shadow: 0 0 30px rgba(0,212,255,0.2); }
+.mic-btn.recording {
+  border-color: var(--accent3); background: rgba(255,107,107,0.1);
+  animation: pulse-rec 1.4s ease-in-out infinite;
+  box-shadow: 0 0 30px rgba(255,107,107,0.3);
+}
+.mic-btn.recording::after { border-color: rgba(255,107,107,0.3); animation: ring 1.4s ease-in-out infinite; }
+@keyframes pulse-rec {
+  0%,100% { box-shadow: 0 0 20px rgba(255,107,107,0.2); }
+  50% { box-shadow: 0 0 40px rgba(255,107,107,0.5); }
+}
+@keyframes ring {
+  0%,100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.15); opacity: 0; }
+}
+.mic-status { font-size: 0.85rem; color: var(--muted); min-height: 20px; }
+.mic-status.active { color: var(--accent3); font-weight: 500; }
+.mic-status.success { color: var(--accent2); }
+
+/* TRANSCRIPT */
+.transcript-box {
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 10px;
+  padding: 14px 18px; min-height: 56px; font-size: 1rem;
+  color: var(--muted); font-style: italic; margin-bottom: 16px; line-height: 1.5;
+  transition: border-color 0.2s;
+}
+.transcript-box.has-text { color: var(--text); font-style: normal; border-color: rgba(0,212,255,0.3); }
+
+.btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+.btn-primary {
+  background: linear-gradient(135deg, var(--accent), #0080cc);
+  color: #080c10; border: none; padding: 11px 28px; border-radius: 9px;
+  font-family: 'Outfit', sans-serif; font-size: 0.95rem; font-weight: 600;
+  cursor: pointer; transition: all 0.2s; box-shadow: 0 0 16px rgba(0,212,255,0.2);
+}
+.btn-primary:hover { opacity: 0.88; box-shadow: 0 0 24px rgba(0,212,255,0.4); transform: translateY(-1px); }
+.btn-ghost {
+  background: transparent; color: var(--muted); border: 1px solid var(--border);
+  padding: 11px 20px; border-radius: 9px; font-family: 'Outfit', sans-serif;
+  font-size: 0.95rem; cursor: pointer; transition: all 0.2s;
+}
+.btn-ghost:hover { color: var(--text); border-color: var(--muted); }
+.btn-sm {
+  background: transparent; color: var(--accent); border: 1px solid var(--accent);
+  padding: 6px 14px; border-radius: 6px; font-size: 0.8rem; cursor: pointer;
+  font-family: 'Outfit', sans-serif; transition: all 0.2s;
+}
+.btn-sm:hover { background: rgba(0,212,255,0.1); }
+
+/* FORMULA DISPLAY */
+.formula-output {
+  font-family: 'JetBrains Mono', monospace; font-size: 2.6rem; font-weight: 600;
+  color: var(--accent2); min-height: 72px; display: flex; align-items: center;
+  flex-wrap: wrap; gap: 10px; margin-bottom: 10px; word-break: break-all;
+  text-shadow: 0 0 20px rgba(0,255,157,0.3);
+}
+.formula-output sub { font-size: 1.5rem; color: var(--accent); vertical-align: sub; }
+.formula-output sup { font-size: 1.3rem; color: var(--purple); vertical-align: super; }
+.formula-name { color: var(--muted); font-size: 0.9rem; font-style: italic; margin-bottom: 14px; min-height: 20px; }
+
+/* SUCCESS FLASH */
+.success-flash {
+  position: fixed; top: 20px; right: 20px; z-index: 999;
+  background: var(--surface2); border: 1px solid var(--accent2);
+  border-radius: 10px; padding: 12px 20px;
+  color: var(--accent2); font-size: 0.9rem; font-weight: 500;
+  box-shadow: 0 0 24px rgba(0,255,157,0.2);
+  transform: translateX(120%); transition: transform 0.3s ease;
+  display: flex; align-items: center; gap: 8px;
+}
+.success-flash.show { transform: translateX(0); }
+
+/* HISTORY */
+.history-list { display: flex; flex-direction: column; gap: 7px; max-height: 260px; overflow-y: auto; }
+.history-item {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 9px; padding: 10px 14px;
+}
+.h-formula { font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; color: var(--accent2); min-width: 90px; }
+.h-formula sub { font-size: 0.7rem; }
+.h-formula sup { font-size: 0.7rem; color: var(--purple); }
+.h-spoken { color: var(--muted); font-size: 0.8rem; flex: 1; }
+.h-copy { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1rem; padding: 3px 7px; transition: color 0.2s; border-radius: 4px; }
+.h-copy:hover { color: var(--accent); background: rgba(0,212,255,0.08); }
+
+/* REFERENCE */
+.ref-search {
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 9px;
+  padding: 10px 16px; width: 100%; color: var(--text);
+  font-family: 'Outfit', sans-serif; font-size: 0.9rem; outline: none;
+  margin-bottom: 14px; transition: border-color 0.2s;
+}
+.ref-search:focus { border-color: var(--accent); }
+.ref-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 7px; max-height: 380px; overflow-y: auto; }
+.ref-item {
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+  padding: 9px 12px; font-size: 0.8rem; display: flex; align-items: center; gap: 10px;
+  cursor: pointer; transition: border-color 0.15s;
+}
+.ref-item:hover { border-color: var(--accent); }
+.ref-spoken { color: var(--muted); flex: 1; font-size: 0.78rem; }
+.ref-formula { font-family: 'JetBrains Mono', monospace; color: var(--accent2); font-size: 0.88rem; }
+.ref-formula sub { font-size: 0.6rem; }
+.ref-formula sup { font-size: 0.6rem; color: var(--purple); }
+
+.type-input:focus { border-color: var(--accent4); }
+
+.no-support {
+  background: rgba(255,107,107,0.1); border: 1px solid var(--accent3);
+  border-radius: 10px; padding: 14px 18px; color: var(--accent3);
+  font-size: 0.9rem; margin-bottom: 20px; display: none;
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--surface); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+/* tip */
+.tip-bar {
+  background: rgba(0,212,255,0.06); border: 1px solid rgba(0,212,255,0.18);
+  border-radius: 9px; padding: 10px 16px; font-size: 0.82rem; color: var(--muted); margin-bottom: 18px;
+}
+.tip-bar strong { color: var(--accent); }
+
+/* category badge */
+.cat-badge {
+  display: inline-block; font-size: 0.7rem; padding: 2px 8px;
+  border-radius: 20px; margin-right: 4px; margin-bottom: 10px;
+  border: 1px solid; cursor: pointer; transition: all 0.15s; font-family: 'JetBrains Mono', monospace;
+}
+.cat-badge:hover { opacity: 0.8; }
+
+@keyframes fadeInUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+.card { animation: fadeInUp 0.3s ease both; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="header-top">
+      <div class="logo-mark">⚗️</div>
+      <h1>ChemVoice <span style="font-size:0.82rem;color:var(--accent3);background:rgba(255,107,107,0.12);border:1px solid var(--accent3);border-radius:6px;padding:3px 10px;vertical-align:middle;font-family:'Outfit',sans-serif;font-weight:500;">TESTING MODE</span></h1>
+    </div>
+    <p class="tagline">Speak the compound name — the formula appears. Approved accommodation tool.</p>
+  </header>
+
+  <div class="no-support" id="noSupport">
+    ⚠️ Speech recognition requires Google Chrome or Microsoft Edge. Please switch browsers.
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- TAB: DICTATE                                                  -->
+  <!-- ============================================================ -->
+    <div style="background:rgba(255,107,107,0.07);border:1px solid rgba(255,107,107,0.3);border-radius:10px;padding:12px 18px;margin-bottom:20px;font-size:0.83rem;color:var(--muted);">
+      🔒 <strong style="color:var(--accent3);">Testing Version</strong> — Voice conversion only. No reference list, no quiz, no history. Student must already know the compound name to use this tool.
+    </div>
+
+    <div class="card">
+      <div class="card-title">Voice Input</div>
+      <div class="mic-wrap">
+        <button class="mic-btn" id="micBtn" onclick="toggleRecording('main')">🎤</button>
+        <div class="mic-status" id="micStatus">Click to start speaking</div>
+      </div>
+      <div class="transcript-box" id="transcriptBox">Your spoken words will appear here...</div>
+      <div class="btn-row">
+        <button class="btn-primary" onclick="convertAndShow()">⚗️ Convert to Formula</button>
+        <button class="btn-ghost" onclick="clearDictate()">Clear</button>
+      </div>
+    </div>
+
+</div>
+
+<div style="display:none"><div id="historyList"></div></div>
+
+<!-- SUCCESS TOAST -->
+<div class="success-flash" id="successFlash">
+  <span id="successIcon">✓</span>
+  <span id="successMsg">Formula recognized!</span>
+</div>
+
+<script>
+// =====================================================
+// CHEMISTRY DATABASE (80+ compounds)
+// =====================================================
+const chemDB = [
+  // === WATER & COMMON ===
+  { spoken: ["water","h two o","h2o"], formula:"H₂O", html:"H<sub>2</sub>O", name:"Water", cat:"Common" },
+  { spoken: ["hydrogen peroxide","h two o two","h2o2"], formula:"H₂O₂", html:"H<sub>2</sub>O<sub>2</sub>", name:"Hydrogen Peroxide", cat:"Common" },
+  { spoken: ["ozone","o three","o3"], formula:"O₃", html:"O<sub>3</sub>", name:"Ozone", cat:"Common" },
+
+  // === DIATOMIC ELEMENTS ===
+  { spoken: ["oxygen","o two","o2"], formula:"O₂", html:"O<sub>2</sub>", name:"Oxygen Gas", cat:"Elements" },
+  { spoken: ["hydrogen","h two","h2"], formula:"H₂", html:"H<sub>2</sub>", name:"Hydrogen Gas", cat:"Elements" },
+  { spoken: ["nitrogen","n two","n2"], formula:"N₂", html:"N<sub>2</sub>", name:"Nitrogen Gas", cat:"Elements" },
+  { spoken: ["chlorine gas","cl two","cl2"], formula:"Cl₂", html:"Cl<sub>2</sub>", name:"Chlorine Gas", cat:"Elements" },
+  { spoken: ["fluorine","f two","f2"], formula:"F₂", html:"F<sub>2</sub>", name:"Fluorine Gas", cat:"Elements" },
+  { spoken: ["bromine","br two","br2"], formula:"Br₂", html:"Br<sub>2</sub>", name:"Bromine", cat:"Elements" },
+  { spoken: ["iodine","i two","i2"], formula:"I₂", html:"I<sub>2</sub>", name:"Iodine", cat:"Elements" },
+
+  // === ACIDS ===
+  { spoken: ["hydrochloric acid","hcl","h c l","muriatic acid"], formula:"HCl", html:"HCl", name:"Hydrochloric Acid", cat:"Acids" },
+  { spoken: ["sulfuric acid","h two s o four","h2so4"], formula:"H₂SO₄", html:"H<sub>2</sub>SO<sub>4</sub>", name:"Sulfuric Acid", cat:"Acids" },
+  { spoken: ["nitric acid","h n o three","hno3"], formula:"HNO₃", html:"HNO<sub>3</sub>", name:"Nitric Acid", cat:"Acids" },
+  { spoken: ["phosphoric acid","h three p o four","h3po4"], formula:"H₃PO₄", html:"H<sub>3</sub>PO<sub>4</sub>", name:"Phosphoric Acid", cat:"Acids" },
+  { spoken: ["acetic acid","vinegar","ch three cooh","ethanoic acid"], formula:"CH₃COOH", html:"CH<sub>3</sub>COOH", name:"Acetic Acid", cat:"Acids" },
+  { spoken: ["carbonic acid","h two c o three","h2co3"], formula:"H₂CO₃", html:"H<sub>2</sub>CO<sub>3</sub>", name:"Carbonic Acid", cat:"Acids" },
+  { spoken: ["hydrobromic acid","h b r","hbr"], formula:"HBr", html:"HBr", name:"Hydrobromic Acid", cat:"Acids" },
+  { spoken: ["hydrofluoric acid","h f","hf"], formula:"HF", html:"HF", name:"Hydrofluoric Acid", cat:"Acids" },
+  { spoken: ["hydroiodic acid","h i","hi"], formula:"HI", html:"HI", name:"Hydroiodic Acid", cat:"Acids" },
+  { spoken: ["perchloric acid","hclo four","hclo4"], formula:"HClO₄", html:"HClO<sub>4</sub>", name:"Perchloric Acid", cat:"Acids" },
+  { spoken: ["oxalic acid","h two c two o four"], formula:"H₂C₂O₄", html:"H<sub>2</sub>C<sub>2</sub>O<sub>4</sub>", name:"Oxalic Acid", cat:"Acids" },
+
+  // === BASES ===
+  { spoken: ["sodium hydroxide","naoh","lye","caustic soda"], formula:"NaOH", html:"NaOH", name:"Sodium Hydroxide", cat:"Bases" },
+  { spoken: ["potassium hydroxide","koh","caustic potash"], formula:"KOH", html:"KOH", name:"Potassium Hydroxide", cat:"Bases" },
+  { spoken: ["calcium hydroxide","ca oh two","slaked lime"], formula:"Ca(OH)₂", html:"Ca(OH)<sub>2</sub>", name:"Calcium Hydroxide", cat:"Bases" },
+  { spoken: ["ammonia","n h three","nh3"], formula:"NH₃", html:"NH<sub>3</sub>", name:"Ammonia", cat:"Bases" },
+  { spoken: ["lithium hydroxide","lioh"], formula:"LiOH", html:"LiOH", name:"Lithium Hydroxide", cat:"Bases" },
+  { spoken: ["magnesium hydroxide","mg oh two","milk of magnesia"], formula:"Mg(OH)₂", html:"Mg(OH)<sub>2</sub>", name:"Magnesium Hydroxide", cat:"Bases" },
+  { spoken: ["barium hydroxide","ba oh two"], formula:"Ba(OH)₂", html:"Ba(OH)<sub>2</sub>", name:"Barium Hydroxide", cat:"Bases" },
+
+  // === SALTS ===
+  { spoken: ["sodium chloride","table salt","salt","nacl"], formula:"NaCl", html:"NaCl", name:"Sodium Chloride", cat:"Salts" },
+  { spoken: ["potassium chloride","kcl"], formula:"KCl", html:"KCl", name:"Potassium Chloride", cat:"Salts" },
+  { spoken: ["calcium chloride","cacl two","cacl2"], formula:"CaCl₂", html:"CaCl<sub>2</sub>", name:"Calcium Chloride", cat:"Salts" },
+  { spoken: ["magnesium chloride","mgcl two","mgcl2"], formula:"MgCl₂", html:"MgCl<sub>2</sub>", name:"Magnesium Chloride", cat:"Salts" },
+  { spoken: ["sodium bicarbonate","baking soda","nahco three","nahco3"], formula:"NaHCO₃", html:"NaHCO<sub>3</sub>", name:"Sodium Bicarbonate", cat:"Salts" },
+  { spoken: ["calcium carbonate","caco three","caco3","limestone","chalk"], formula:"CaCO₃", html:"CaCO<sub>3</sub>", name:"Calcium Carbonate", cat:"Salts" },
+  { spoken: ["sodium carbonate","na two c o three","soda ash","washing soda"], formula:"Na₂CO₃", html:"Na<sub>2</sub>CO<sub>3</sub>", name:"Sodium Carbonate", cat:"Salts" },
+  { spoken: ["copper sulfate","cuso four","cuso4"], formula:"CuSO₄", html:"CuSO<sub>4</sub>", name:"Copper(II) Sulfate", cat:"Salts" },
+  { spoken: ["sodium sulfate","na two so four","na2so4"], formula:"Na₂SO₄", html:"Na<sub>2</sub>SO<sub>4</sub>", name:"Sodium Sulfate", cat:"Salts" },
+  { spoken: ["silver nitrate","agno three","agno3"], formula:"AgNO₃", html:"AgNO<sub>3</sub>", name:"Silver Nitrate", cat:"Salts" },
+  { spoken: ["sodium nitrate","nano three","nano3","saltpeter"], formula:"NaNO₃", html:"NaNO<sub>3</sub>", name:"Sodium Nitrate", cat:"Salts" },
+  { spoken: ["potassium nitrate","kno three","kno3"], formula:"KNO₃", html:"KNO<sub>3</sub>", name:"Potassium Nitrate", cat:"Salts" },
+  { spoken: ["ammonium chloride","nh four cl","nh4cl"], formula:"NH₄Cl", html:"NH<sub>4</sub>Cl", name:"Ammonium Chloride", cat:"Salts" },
+  { spoken: ["ammonium sulfate","nh four two so four"], formula:"(NH₄)₂SO₄", html:"(NH<sub>4</sub>)<sub>2</sub>SO<sub>4</sub>", name:"Ammonium Sulfate", cat:"Salts" },
+  { spoken: ["potassium permanganate","kmno four","kmno4"], formula:"KMnO₄", html:"KMnO<sub>4</sub>", name:"Potassium Permanganate", cat:"Salts" },
+  { spoken: ["sodium phosphate","na three po four","na3po4"], formula:"Na₃PO₄", html:"Na<sub>3</sub>PO<sub>4</sub>", name:"Sodium Phosphate", cat:"Salts" },
+  { spoken: ["calcium phosphate","ca three po four two"], formula:"Ca₃(PO₄)₂", html:"Ca<sub>3</sub>(PO<sub>4</sub>)<sub>2</sub>", name:"Calcium Phosphate", cat:"Salts" },
+  { spoken: ["iron two sulfate","feso four","feso4"], formula:"FeSO₄", html:"FeSO<sub>4</sub>", name:"Iron(II) Sulfate", cat:"Salts" },
+  { spoken: ["zinc sulfate","znso four","znso4"], formula:"ZnSO₄", html:"ZnSO<sub>4</sub>", name:"Zinc Sulfate", cat:"Salts" },
+
+  // === OXIDES ===
+  { spoken: ["carbon dioxide","co two","co2"], formula:"CO₂", html:"CO<sub>2</sub>", name:"Carbon Dioxide", cat:"Oxides" },
+  { spoken: ["carbon monoxide","co"], formula:"CO", html:"CO", name:"Carbon Monoxide", cat:"Oxides" },
+  { spoken: ["sulfur dioxide","s o two","so2"], formula:"SO₂", html:"SO<sub>2</sub>", name:"Sulfur Dioxide", cat:"Oxides" },
+  { spoken: ["sulfur trioxide","s o three","so3"], formula:"SO₃", html:"SO<sub>3</sub>", name:"Sulfur Trioxide", cat:"Oxides" },
+  { spoken: ["nitrogen dioxide","n o two","no2"], formula:"NO₂", html:"NO<sub>2</sub>", name:"Nitrogen Dioxide", cat:"Oxides" },
+  { spoken: ["nitrous oxide","laughing gas","n two o","n2o","dinitrogen monoxide"], formula:"N₂O", html:"N<sub>2</sub>O", name:"Nitrous Oxide", cat:"Oxides" },
+  { spoken: ["iron two oxide","feo","ferrous oxide"], formula:"FeO", html:"FeO", name:"Iron(II) Oxide", cat:"Oxides" },
+  { spoken: ["iron three oxide","fe two o three","fe2o3","rust","ferric oxide"], formula:"Fe₂O₃", html:"Fe<sub>2</sub>O<sub>3</sub>", name:"Iron(III) Oxide", cat:"Oxides" },
+  { spoken: ["magnesium oxide","mgo"], formula:"MgO", html:"MgO", name:"Magnesium Oxide", cat:"Oxides" },
+  { spoken: ["aluminum oxide","al two o three","al2o3","alumina","corundum"], formula:"Al₂O₃", html:"Al<sub>2</sub>O<sub>3</sub>", name:"Aluminum Oxide", cat:"Oxides" },
+  { spoken: ["zinc oxide","zno"], formula:"ZnO", html:"ZnO", name:"Zinc Oxide", cat:"Oxides" },
+  { spoken: ["copper two oxide","cuo","cupric oxide"], formula:"CuO", html:"CuO", name:"Copper(II) Oxide", cat:"Oxides" },
+  { spoken: ["silicon dioxide","sio two","sio2","silica","quartz"], formula:"SiO₂", html:"SiO<sub>2</sub>", name:"Silicon Dioxide", cat:"Oxides" },
+  { spoken: ["titanium dioxide","tio two","tio2"], formula:"TiO₂", html:"TiO<sub>2</sub>", name:"Titanium Dioxide", cat:"Oxides" },
+  { spoken: ["dinitrogen pentoxide","n two o five"], formula:"N₂O₅", html:"N<sub>2</sub>O<sub>5</sub>", name:"Dinitrogen Pentoxide", cat:"Oxides" },
+  { spoken: ["phosphorus pentoxide","p two o five","p4o10"], formula:"P₂O₅", html:"P<sub>2</sub>O<sub>5</sub>", name:"Phosphorus Pentoxide", cat:"Oxides" },
+
+  // === ORGANIC ===
+  { spoken: ["methane","c h four","ch4","natural gas"], formula:"CH₄", html:"CH<sub>4</sub>", name:"Methane", cat:"Organic" },
+  { spoken: ["ethane","c two h six","c2h6"], formula:"C₂H₆", html:"C<sub>2</sub>H<sub>6</sub>", name:"Ethane", cat:"Organic" },
+  { spoken: ["propane","c three h eight","c3h8"], formula:"C₃H₈", html:"C<sub>3</sub>H<sub>8</sub>", name:"Propane", cat:"Organic" },
+  { spoken: ["butane","c four h ten","c4h10"], formula:"C₄H₁₀", html:"C<sub>4</sub>H<sub>10</sub>", name:"Butane", cat:"Organic" },
+  { spoken: ["ethylene","ethene","c two h four","c2h4"], formula:"C₂H₄", html:"C<sub>2</sub>H<sub>4</sub>", name:"Ethylene", cat:"Organic" },
+  { spoken: ["acetylene","ethyne","c two h two","c2h2"], formula:"C₂H₂", html:"C<sub>2</sub>H<sub>2</sub>", name:"Acetylene", cat:"Organic" },
+  { spoken: ["benzene","c six h six","c6h6"], formula:"C₆H₆", html:"C<sub>6</sub>H<sub>6</sub>", name:"Benzene", cat:"Organic" },
+  { spoken: ["ethanol","ethyl alcohol","c two h five o h","c2h5oh","drinking alcohol"], formula:"C₂H₅OH", html:"C<sub>2</sub>H<sub>5</sub>OH", name:"Ethanol", cat:"Organic" },
+  { spoken: ["methanol","methyl alcohol","c h three o h","ch3oh","wood alcohol"], formula:"CH₃OH", html:"CH<sub>3</sub>OH", name:"Methanol", cat:"Organic" },
+  { spoken: ["acetone","propanone","c three h six o","c3h6o"], formula:"C₃H₆O", html:"C<sub>3</sub>H<sub>6</sub>O", name:"Acetone", cat:"Organic" },
+  { spoken: ["glucose","c six h twelve o six","c6h12o6","dextrose"], formula:"C₆H₁₂O₆", html:"C<sub>6</sub>H<sub>12</sub>O<sub>6</sub>", name:"Glucose", cat:"Organic" },
+  { spoken: ["sucrose","table sugar","c twelve h twenty two o eleven","cane sugar"], formula:"C₁₂H₂₂O₁₁", html:"C<sub>12</sub>H<sub>22</sub>O<sub>11</sub>", name:"Sucrose", cat:"Organic" },
+  { spoken: ["citric acid","c six h eight o seven","c6h8o7"], formula:"C₆H₈O₇", html:"C<sub>6</sub>H<sub>8</sub>O<sub>7</sub>", name:"Citric Acid", cat:"Organic" },
+  { spoken: ["urea","ch four n two o","co nh two two"], formula:"CO(NH₂)₂", html:"CO(NH<sub>2</sub>)<sub>2</sub>", name:"Urea", cat:"Organic" },
+  { spoken: ["formaldehyde","ch two o","methanal"], formula:"CH₂O", html:"CH<sub>2</sub>O", name:"Formaldehyde", cat:"Organic" },
+];
+
+// =====================================================
+// STATE
+// =====================================================
+let recognition = null;
+let isRecording = false;
+let recordingTarget = 'main'; // 'main' or 'quiz'
+let currentTranscript = '';
+let sessionHistory = [];
+let currentFormula = null;
+
+// =====================================================
+// SPEECH RECOGNITION SETUP
+// =====================================================
+function initSpeech() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { document.getElementById('noSupport').style.display='block'; return false; }
+  recognition = new SR();
+  recognition.continuous = false;
+  recognition.interimResults = true;
+  recognition.lang = 'en-US';
+  recognition.onresult = handleSpeechResult;
+  recognition.onend = () => {
+    // Auto-stop when browser detects end of speech
+    if (isRecording) {
+      isRecording = false;
+      const mainBtn = document.getElementById('micBtn');
+      const quizBtn = document.getElementById('quizMicBtn');
+      if (mainBtn) mainBtn.classList.remove('recording');
+      if (quizBtn) quizBtn.classList.remove('recording');
+      if (recordingTarget === 'main') {
+        document.getElementById('micStatus').textContent = 'Done — click Convert to see your formula.';
+        document.getElementById('micStatus').className = 'mic-status success';
+      }
+    }
+  };
+  recognition.onerror = (e) => { if (e.error !== 'no-speech') console.warn('SR error:', e.error); };
+  return true;
+}
+
+function handleSpeechResult(e) {
+  let interim = '', final = '';
+  for (let i = e.resultIndex; i < e.results.length; i++) {
+    if (e.results[i].isFinal) final += e.results[i][0].transcript;
+    else interim += e.results[i][0].transcript;
+  }
+  currentTranscript += final;
+  const display = (currentTranscript + interim).trim();
+
+  if (recordingTarget === 'main') {
+    const box = document.getElementById('transcriptBox');
+    box.textContent = display || 'Listening...';
+    box.className = 'transcript-box' + (display ? ' has-text' : '');
+  } else {
+    const box = document.getElementById('quizAnswerArea');
+    box.textContent = display || 'Listening...';
+    box.className = 'quiz-answer-area' + (display ? ' has-text' : '');
+  }
+}
+
+function toggleRecording(target) {
+  if (!recognition && !initSpeech()) return;
+  recordingTarget = target;
+
+  if (isRecording && recordingTarget === target) {
+    // Stop
+    isRecording = false;
+    recognition.stop();
+    const btn = target === 'main' ? document.getElementById('micBtn') : document.getElementById('quizMicBtn');
+    btn.classList.remove('recording');
+    if (target === 'main') {
+      document.getElementById('micStatus').textContent = 'Recording stopped. Click Convert to see formula.';
+      document.getElementById('micStatus').className = 'mic-status';
+    }
+  } else {
+    // Start (stop any existing first)
+    if (isRecording) recognition.stop();
+    isRecording = true;
+    currentTranscript = '';
+    recognition.start();
+    const btn = target === 'main' ? document.getElementById('micBtn') : document.getElementById('quizMicBtn');
+    btn.classList.add('recording');
+    if (target === 'main') {
+      document.getElementById('micStatus').textContent = '🔴 Listening — speak now';
+      document.getElementById('micStatus').className = 'mic-status active';
+      document.getElementById('transcriptBox').textContent = 'Listening...';
+      document.getElementById('transcriptBox').className = 'transcript-box';
+    } else {
+      document.getElementById('quizAnswerArea').textContent = 'Listening...';
+      document.getElementById('quizAnswerArea').className = 'quiz-answer-area';
+    }
+  }
+}
+
+// =====================================================
+// TEXT-TO-SPEECH CONFIRMATION
+// =====================================================
+function speakText(text) {
+  if (!window.speechSynthesis) return;
+  speechSynthesis.cancel();
+  const utt = new SpeechSynthesisUtterance(text);
+  utt.rate = 0.92; utt.pitch = 1;
+  speechSynthesis.speak(utt);
+}
+
+// Converts formula like "H₂SO₄" into speakable "H 2 S O 4"
+function formulaToSpoken(formula) {
+  // Convert using charCode ranges — subscript digits are U+2080–U+2089
+  let plain = '';
+  for (let i = 0; i < formula.length; i++) {
+    const code = formula.charCodeAt(i);
+    if (code >= 0x2080 && code <= 0x2089) {
+      plain += (code - 0x2080).toString(); // ₀=0x2080, ₁=0x2081 ... ₉=0x2089
+    } else {
+      plain += formula[i];
+    }
+  }
+  // Now space out elements and numbers so TTS reads each token separately
+  // e.g. "H2O" → "H 2 O", "Fe2O3" → "Fe 2 O 3", "Ca(OH)2" → "Ca (O H) 2"
+  plain = plain
+    .replace(/([A-Z][a-z]?)(\d+)/g, '$1 $2 ')
+    .replace(/([A-Z][a-z]?)(?=[A-Z(])/g, '$1 ')
+    .replace(/([A-Z][a-z]?)(\s*)$/g, '$1')
+    .replace(/\(([^)]+)\)\s*(\d*)/g, (m, g1, g2) => ` (${g1}) ${g2} `)
+    .replace(/\s+/g, ' ').trim();
+  return plain;
+}
+
+function playSuccessSound() {
+  if (!window.AudioContext && !window.webkitAudioContext) return;
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const notes = [523.25, 659.25, 783.99]; // C5, E5, G5
+    notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.frequency.value = freq;
+      osc.type = 'sine';
+      gain.gain.setValueAtTime(0, ctx.currentTime + i * 0.1);
+      gain.gain.linearRampToValueAtTime(0.18, ctx.currentTime + i * 0.1 + 0.02);
+      gain.gain.linearRampToValueAtTime(0, ctx.currentTime + i * 0.1 + 0.18);
+      osc.start(ctx.currentTime + i * 0.1);
+      osc.stop(ctx.currentTime + i * 0.1 + 0.2);
+    });
+  } catch(e) {}
+}
+
+function playErrorSound() {
+  if (!window.AudioContext && !window.webkitAudioContext) return;
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = 220;
+    osc.type = 'sawtooth';
+    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+    gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.3);
+    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.3);
+  } catch(e) {}
+}
+
+function showToast(msg, icon='✓', color='var(--accent2)') {
+  const el = document.getElementById('successFlash');
+  document.getElementById('successIcon').textContent = icon;
+  document.getElementById('successMsg').textContent = msg;
+  el.style.borderColor = color;
+  el.style.color = color;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2400);
+}
+
+// =====================================================
+// CONVERSION ENGINE
+// =====================================================
+function normalizeText(t) {
+  return t.toLowerCase()
+    .replace(/\bone\b/g,'1').replace(/\btwo\b/g,'2').replace(/\bthree\b/g,'3')
+    .replace(/\bfour\b/g,'4').replace(/\bfive\b/g,'5').replace(/\bsix\b/g,'6')
+    .replace(/\bseven\b/g,'7').replace(/\beight\b/g,'8').replace(/\bnine\b/g,'9')
+    .replace(/\bten\b/g,'10').replace(/\beleven\b/g,'11').replace(/\btwelve\b/g,'12')
+    .replace(/\btwenty-two\b/g,'22').replace(/\btwenty two\b/g,'22').replace(/\btwenty\b/g,'20')
+    .replace(/[^a-z0-9 ]/g,'').trim();
+}
+
+function findBestMatch(input) {
+  const norm = normalizeText(input);
+  let best = null, bestScore = 0;
+  for (const entry of chemDB) {
+    for (const spoken of entry.spoken) {
+      const ns = normalizeText(spoken);
+      if (norm === ns || norm.includes(ns)) {
+        const sc = ns.length;
+        if (sc > bestScore) { bestScore = sc; best = entry; }
+      }
+      const iw = norm.split(' '), sw = ns.split(' ');
+      const matches = sw.filter(w => iw.includes(w)).length;
+      const ratio = matches / sw.length;
+      if (ratio >= 0.8 && matches > bestScore) { bestScore = matches; best = entry; }
+    }
+  }
+  return best;
+}
+
+function buildRawFormula(text) {
+  const norm = normalizeText(text);
+  const knownEl = ['h','he','li','be','b','c','n','o','f','ne','na','mg','al','si','p','s','cl','ar','k','ca','sc','ti','v','cr','mn','fe','co','ni','cu','zn','ga','ge','as','se','br','kr','rb','sr','y','zr','nb','mo','ag','cd','in','sn','sb','te','i','xe','cs','ba','hg','pb','bi','pt','au'];
+  const pat = /\b([a-z]{1,2})(\d*)\b/g;
+  const elements = [];
+  let m;
+  while ((m = pat.exec(norm)) !== null) {
+    if (knownEl.includes(m[1])) elements.push({ el: m[1].charAt(0).toUpperCase()+m[1].slice(1), num: m[2]||'' });
+  }
+  if (!elements.length) return null;
+  let formula='', html='';
+  elements.forEach(e => {
+    formula += e.el + (e.num ? n2sub(e.num) : '');
+    html += e.el + (e.num ? `<sub>${e.num}</sub>` : '');
+  });
+  return { formula, html };
+}
+
+function n2sub(n) {
+  const map = {'0':'₀','1':'₁','2':'₂','3':'₃','4':'₄','5':'₅','6':'₆','7':'₇','8':'₈','9':'₉'};
+  return n.split('').map(c=>map[c]||c).join('');
+}
+
+// =====================================================
+// DICTATE TAB
+// =====================================================
+function convertAndShow() {
+  const box = document.getElementById('transcriptBox');
+  const text = box.textContent.trim();
+  if (!text || text==='Your spoken words will appear here...' || text==='Listening...') {
+    showToast('No input to convert — speak first!', '⚠️', 'var(--accent4)');
+    return;
+  }
+  const match = findBestMatch(text);
+  const display = document.getElementById('formulaDisplay');
+  const nameEl = document.getElementById('formulaName');
+  if (match) {
+    display.innerHTML = match.html;
+    nameEl.textContent = match.name + (match.cat ? ` · ${match.cat}` : '');
+    currentFormula = match;
+    addHistory(match, text);
+    playSuccessSound();
+    showToast(`✓ ${match.name}`, '⚗️', 'var(--accent2)');
+    speakText(match.name + ". Formula: " + formulaToSpoken(match.formula));
+  } else {
+    const raw = buildRawFormula(text);
+    if (raw) {
+      display.innerHTML = raw.html;
+      nameEl.textContent = 'Custom formula (parsed from input)';
+      currentFormula = { formula: raw.formula, html: raw.html, name: 'Custom formula' };
+      addHistory(currentFormula, text);
+      playSuccessSound();
+      showToast('Formula parsed!', '⚗️', 'var(--accent)');
+      speakText("Formula: " + formulaToSpoken(raw.formula));
+    } else {
+      display.innerHTML = `<span style="color:var(--accent3);font-size:0.95rem;font-family:'Outfit',sans-serif;">Could not recognize "${text}". Check the Reference tab for how to speak formulas.</span>`;
+      nameEl.textContent = '';
+      currentFormula = null;
+      playErrorSound();
+    }
+  }
+}
+
+function addHistory(entry, spoken) {
+  sessionHistory.unshift({ entry, spoken: spoken.substring(0,60) });
+  if (sessionHistory.length > 30) sessionHistory.pop();
+  renderHistory();
+}
+
+function renderHistory() {
+  const list = document.getElementById('historyList');
+  if (!sessionHistory.length) {
+    list.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;font-style:italic;">No formulas converted yet.</div>';
+    return;
+  }
+  list.innerHTML = sessionHistory.map(h => `
+    <div class="history-item">
+      <span class="h-formula">${h.entry.html}</span>
+      <span class="h-spoken">"${h.spoken}"</span>
+      <button class="h-copy" title="Copy" onclick="copyText('${h.entry.formula}',this)">⎘</button>
+    </div>`).join('');
+}
+
+function clearHistory() { sessionHistory = []; renderHistory(); }
+
+function clearDictate() {
+  currentTranscript = '';
+  if (isRecording && recordingTarget==='main') toggleRecording('main');
+  const box = document.getElementById('transcriptBox');
+  box.textContent = 'Your spoken words will appear here...';
+  box.className = 'transcript-box';
+  document.getElementById('formulaDisplay').innerHTML = '<span style="color:var(--muted);font-size:1rem;font-family:\'Outfit\',sans-serif;font-style:italic;">Formula will appear here</span>';
+  document.getElementById('formulaName').textContent = '';
+  document.getElementById('micStatus').textContent = 'Click to start speaking';
+  document.getElementById('micStatus').className = 'mic-status';
+  currentFormula = null;
+}
+
+function copyFormula() {
+  if (!currentFormula) return;
+  copyText(currentFormula.formula, document.querySelector('.btn-sm'));
+}
+
+function speakFormula() {
+  if (!currentFormula) { showToast('No formula to read yet', '⚠️', 'var(--accent4)'); return; }
+  speakText(currentFormula.name + ". Formula: " + formulaToSpoken(currentFormula.formula));
+}
+
+function copyText(text, btn) {
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('Copied to clipboard!', '⎘', 'var(--accent)');
+    if (btn) { const o=btn.textContent; btn.textContent='✓'; setTimeout(()=>btn.textContent=o,1200); }
+  }).catch(() => prompt('Copy this formula:', text));
+}
+
+// =====================================================
+// INIT
+// =====================================================
+initSpeech();
+</script>
+</body>
+</html>
