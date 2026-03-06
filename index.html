@@ -577,7 +577,8 @@ function handleSpeechResult(e) {
 
   if (recordingTarget === 'main') {
     const box = document.getElementById('transcriptBox');
-    box.textContent = display || 'Listening...';
+    const corrected = display ? correctMishearings(display) : '';
+    box.textContent = corrected || display || 'Listening...';
     box.className = 'transcript-box' + (display ? ' has-text' : '');
   } else {
     const box = document.getElementById('quizAnswerArea');
@@ -702,13 +703,90 @@ function showToast(msg, icon='✓', color='var(--accent2)') {
 // =====================================================
 // CONVERSION ENGINE
 // =====================================================
+// Correct common speech recognition mishearings of chemical element letters/combos
+function correctMishearings(t) {
+  let s = t.toLowerCase();
+
+  // Fix common element letter mishearings first (whole word matches)
+  const fixes = [
+    // Single letters misheard as words
+    [/\bage\b/g,        'h'],   // "H" → "age"
+    [/\baitch\b/g,      'h'],   // "H" → "aitch"
+    [/\beach\b/g,       'h'],   // "H" → "each" / "h"
+    [/\bsee\b/g,        'c'],   // "C" → "see"
+    [/\bsea\b/g,        'c'],   // "C" → "sea"
+    [/\band\b/g,        'n'],   // "N" → "and" (only if surrounded by elements)
+    [/\boh\b/g,         'o'],   // "O" → "oh"
+    [/\bzero\b/g,       'o'],   // "O" → "zero"
+    [/\bare\b/g,        'r'],   // "R" → "are"
+    [/\bbe\b/g,         'b'],   // "B" → "be" (careful - also "be" in words)
+    [/\bpee\b/g,        'p'],   // "P" → "pee"
+    [/\bqueue\b/g,      'q'],   // "Q" → "queue" (rare)
+    [/\bwhy\b/g,        'y'],   // "Y" → "why"
+    [/\bex\b/g,         'x'],   // "X" → "ex"
+    [/\bzee\b/g,        'z'],   // "Z" → "zee"
+    [/\bkay\b/g,        'k'],   // "K" → "kay"
+    [/\bjay\b/g,        'j'],   // "J" → "jay"
+    [/\bel\b/g,         'l'],   // "L" → "el"
+    [/\bem\b/g,         'm'],   // "M" → "em"
+    [/\ben\b/g,         'n'],   // "N" → "en"
+    [/\bef\b/g,         'f'],   // "F" → "ef"
+    [/\bive\b/g,        'v'],   // "V" → "ive" (rare)
+
+    // Common multi-letter element mishearings
+    [/\bchapter\b/g,    'ch'],  // "CH" → "chapter"
+    [/\bchair\b/g,      'ch'],  // "CH" → "chair"
+    [/\bcheck\b/g,      'ch'],  // "CH" → "check"
+    [/\bchina\b/g,      'ch'],  // "CH" → "china"
+    [/\bchild\b/g,      'ch'],  // "CH" → "child"
+    [/\bchange\b/g,     'ch'],  // "CH" → "change"
+    [/\bchoose\b/g,     'ch'],  // "CH" → "choose"
+    [/\bcooh\b/g,       'cooh'],// COOH already fine
+    [/\bseawater\b/g,   'ca'],  // "CA" → "seawater" (rare)
+    [/\bseesaw\b/g,     'c2'],  // 
+    [/\bfee\b/g,        'fe'],  // "FE" → "fee"
+    [/\bfaye\b/g,       'fe'],  // "FE" → "faye"
+    [/\bna\b/g,         'na'],  // already fine
+    [/\bknee\b/g,       'ni'],  // "NI" → "knee"
+    [/\bcue\b/g,        'cu'],  // "CU" → "cue"
+    [/\bcoo\b/g,        'cu'],  // "CU" → "coo"
+    [/\bzinc\b/g,       'zn'],  // keep zinc as zn equivalent - handled by DB
+    [/\bmanganese\b/g,  'mn'],  // keep - handled by DB
+    [/\bmagnesium\b/g,  'mg'],  // keep - handled by DB
+
+    // Number words that might slip through
+    [/\bto\b/g,         '2'],   // "to" → 2
+    [/\btoo\b/g,        '2'],   // "too" → 2
+    [/\bfor\b/g,        '4'],   // "for" → 4
+    [/\bate\b/g,        '8'],   // "ate" → 8
+    [/\bwon\b/g,        '1'],   // "won" → 1
+    [/\bone\b/g,        '1'],
+    [/\btwo\b/g,        '2'],
+    [/\bthree\b/g,      '3'],
+    [/\bfour\b/g,       '4'],
+    [/\bfive\b/g,       '5'],
+    [/\bsix\b/g,        '6'],
+    [/\bseven\b/g,      '7'],
+    [/\beight\b/g,      '8'],
+    [/\bnine\b/g,       '9'],
+    [/\bten\b/g,        '10'],
+    [/\beleven\b/g,     '11'],
+    [/\btwelve\b/g,     '12'],
+    [/\btwenty-two\b/g, '22'],
+    [/\btwenty two\b/g, '22'],
+    [/\btwenty\b/g,     '20'],
+  ];
+
+  for (const [pattern, replacement] of fixes) {
+    s = s.replace(pattern, replacement);
+  }
+  return s;
+}
+
 function normalizeText(t) {
-  return t.toLowerCase()
-    .replace(/\bone\b/g,'1').replace(/\btwo\b/g,'2').replace(/\bthree\b/g,'3')
-    .replace(/\bfour\b/g,'4').replace(/\bfive\b/g,'5').replace(/\bsix\b/g,'6')
-    .replace(/\bseven\b/g,'7').replace(/\beight\b/g,'8').replace(/\bnine\b/g,'9')
-    .replace(/\bten\b/g,'10').replace(/\beleven\b/g,'11').replace(/\btwelve\b/g,'12')
-    .replace(/\btwenty-two\b/g,'22').replace(/\btwenty two\b/g,'22').replace(/\btwenty\b/g,'20')
+  // First fix mishearings, then normalize
+  let s = correctMishearings(t);
+  return s
     .replace(/[^a-z0-9 ]/g,'').trim();
 }
 
