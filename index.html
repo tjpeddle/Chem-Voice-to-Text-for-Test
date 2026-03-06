@@ -577,7 +577,8 @@ function handleSpeechResult(e) {
 
   if (recordingTarget === 'main') {
     const box = document.getElementById('transcriptBox');
-    const corrected = display ? correctMishearings(display) : '';
+    const stripped = display ? display.replace(/[.,!?;:]+/g, '') : '';
+    const corrected = stripped ? correctMishearings(stripped) : '';
     box.textContent = corrected || display || 'Listening...';
     box.className = 'transcript-box' + (display ? ' has-text' : '');
   } else {
@@ -784,10 +785,15 @@ function correctMishearings(t) {
 }
 
 function normalizeText(t) {
-  // First fix mishearings, then normalize
-  let s = correctMishearings(t);
-  return s
-    .replace(/[^a-z0-9 ]/g,'').trim();
+  // Strip punctuation first (mic adds periods/commas at end of spoken phrases)
+  let s = t.replace(/[.,!?;:]+/g, ' ').toLowerCase();
+  // Fix digit+oh/zero patterns before mishearing correction
+  // e.g. "ch3oh" spoken becomes "ch30." → strip period → "ch30" → fix to "ch3o"
+  s = s.replace(/(\d)oh/g, '$1o');   // 3oh → 3o
+  s = s.replace(/(\d)0/g,  '$1o');   // 30 → 3o  (30 at word boundary)
+  s = s.replace(/(\d)0(?=\s|$)/g, '$1o'); // belt-and-suspenders for 30, 20 etc at end
+  s = correctMishearings(s);
+  return s.replace(/[^a-z0-9 ]/g,'').trim();
 }
 
 function findBestMatch(input) {
