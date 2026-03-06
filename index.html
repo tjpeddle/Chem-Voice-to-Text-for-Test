@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ChemVoice — Testing Mode</title>
+<title>ChemVoice — Speak Your Formulas</title>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -369,21 +369,28 @@ h1 {
   <header>
     <div class="header-top">
       <div class="logo-mark">⚗️</div>
-      <h1>ChemVoice <span style="font-size:0.82rem;color:#ff6b6b;background:rgba(255,107,107,0.12);border:1px solid #ff6b6b;border-radius:6px;padding:3px 10px;vertical-align:middle;font-family:'Outfit',sans-serif;font-weight:500;">TESTING MODE</span></h1>
+      <h1>ChemVoice</h1>
     </div>
-    <p class="tagline">Speak the compound name — the formula appears. Approved accommodation tool.</p>
+    <p class="tagline">Speak chemical names — see proper notation. Built for accessibility in science.</p>
   </header>
 
   <div class="no-support" id="noSupport">
     ⚠️ Speech recognition requires Google Chrome or Microsoft Edge. Please switch browsers.
   </div>
 
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('dictate')">🎤 Dictate</button>
+    <button class="tab-btn" onclick="switchTab('quiz')">🧪 Quiz Mode</button>
+    <button class="tab-btn" onclick="switchTab('reference')">📚 Reference</button>
+  </div>
+
   <!-- ============================================================ -->
   <!-- TAB: DICTATE                                                  -->
   <!-- ============================================================ -->
+  <div id="tab-dictate" class="tab-panel active">
 
-    <div style="background:rgba(255,107,107,0.07);border:1px solid rgba(255,107,107,0.3);border-radius:10px;padding:12px 18px;margin-bottom:20px;font-size:0.83rem;color:#7a8fa6;">
-      🔒 <strong style="color:#ff6b6b;">Testing Version</strong> — Voice conversion only. No reference list, no quiz, no history. Student must already know the compound name to use this tool.
+    <div class="tip-bar">
+      <strong>Tip:</strong> Say compound names like <em>"water"</em>, <em>"sulfuric acid"</em>, <em>"iron three oxide"</em> — or spell it out like <em>"H two O"</em>. Click 🎤 then Convert.
     </div>
 
     <div class="card">
@@ -411,9 +418,111 @@ h1 {
       </div>
     </div>
 
-</div>
+    <div class="card">
+      <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;">
+        <span>Session History</span>
+        <button class="btn-ghost" style="font-size:0.78rem;padding:4px 12px;" onclick="clearHistory()">Clear</button>
+      </div>
+      <div class="history-list" id="historyList">
+        <div style="color:var(--muted);font-size:0.85rem;font-style:italic;">No formulas converted yet.</div>
+      </div>
+    </div>
+  </div>
 
-<div style="display:none"><div id="historyList"></div></div>
+  <!-- ============================================================ -->
+  <!-- TAB: QUIZ MODE                                                -->
+  <!-- ============================================================ -->
+  <div id="tab-quiz" class="tab-panel">
+    <div class="card">
+      <div class="quiz-header">
+        <div>
+          <div class="card-title" style="margin-bottom:4px;">Quiz Mode</div>
+          <p style="color:var(--muted);font-size:0.85rem;">Speak or type the formula you hear/see</p>
+        </div>
+        <div class="quiz-score-bar">
+          <div class="score-pill">✅ <span class="score-val green" id="qCorrect">0</span></div>
+          <div class="score-pill">❌ <span class="score-val red" id="qWrong">0</span></div>
+          <div class="score-pill">🔥 <span class="score-val blue" id="qStreak">0</span></div>
+        </div>
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <span style="color:var(--muted);font-size:0.8rem;margin-right:8px;">Difficulty:</span>
+        <button class="diff-btn active" onclick="setDiff('easy',this)">Easy</button>
+        <button class="diff-btn" onclick="setDiff('medium',this)">Medium</button>
+        <button class="diff-btn" onclick="setDiff('hard',this)">Hard</button>
+      </div>
+
+      <div style="margin-bottom:12px;">
+        <span style="color:var(--muted);font-size:0.8rem;margin-right:8px;">Mode:</span>
+        <button class="diff-btn active" id="modeVoice" onclick="setQuizMode('voice',this)">🎤 Voice</button>
+        <button class="diff-btn" id="modeType" onclick="setQuizMode('type',this)">⌨️ Type</button>
+      </div>
+
+      <div class="quiz-progress"><div class="quiz-progress-bar" id="quizProgressBar" style="width:0%"></div></div>
+
+      <!-- QUIZ CARD -->
+      <div id="quizPlayArea">
+        <div class="quiz-card" id="quizCard">
+          <div class="quiz-prompt-label" id="quizPromptLabel">Speak the name of this compound</div>
+          <div class="quiz-formula" id="quizFormulaDisplay">—</div>
+          <div class="quiz-hint" id="quizHint"></div>
+          <div class="streak-badge" id="streakBadge">🔥 Streak!</div>
+
+          <!-- VOICE mode -->
+          <div id="voiceInputArea">
+            <button class="quiz-mic-btn" id="quizMicBtn" onclick="toggleRecording('quiz')">🎤</button>
+            <div class="quiz-answer-area" id="quizAnswerArea">Press 🎤 and speak the compound name...</div>
+          </div>
+
+          <!-- TYPE mode (hidden by default) -->
+          <div id="typeInputArea" style="display:none;">
+            <input class="type-input" id="typeAnswer" placeholder="Type the compound name..." onkeydown="if(event.key==='Enter') checkQuizAnswer()" autocomplete="off" spellcheck="false">
+            <br><br>
+          </div>
+
+          <div class="quiz-result" id="quizResult">
+            <span class="result-icon" id="resultIcon"></span>
+            <div><div id="resultMsg"></div><div class="result-detail" id="resultDetail"></div></div>
+          </div>
+
+          <div class="quiz-btn-row">
+            <button class="btn-primary" id="checkBtn" onclick="checkQuizAnswer()">Check Answer</button>
+            <button class="btn-ghost" id="nextBtn" onclick="nextQuestion()" style="display:none;">Next →</button>
+            <button class="btn-ghost" id="skipBtn" onclick="skipQuestion()">Skip</button>
+          </div>
+        </div>
+
+        <!-- END SCREEN -->
+        <div class="quiz-end-screen" id="quizEndScreen">
+          <div style="font-size:3rem;margin-bottom:12px;">🏆</div>
+          <div class="end-score" id="endScore">—</div>
+          <div class="end-label" id="endLabel">Quiz Complete!</div>
+          <div class="end-grade" id="endGrade"></div>
+          <button class="btn-primary" onclick="restartQuiz()" style="margin-right:10px;">Play Again</button>
+          <button class="btn-ghost" onclick="switchTab('dictate')">Back to Dictate</button>
+        </div>
+      </div>
+
+      <div style="margin-top:16px;color:var(--muted);font-size:0.78rem;text-align:center;">
+        Quiz ends after 10 questions · All answers are spoken compound names
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- TAB: REFERENCE                                                -->
+  <!-- ============================================================ -->
+  <div id="tab-reference" class="tab-panel">
+    <div class="card">
+      <div class="card-title">Full Formula Reference</div>
+      <input class="ref-search" id="refSearch" placeholder="Search by name or formula..." oninput="filterRef()">
+      <div id="refCats" style="margin-bottom:10px;"></div>
+      <div class="ref-grid" id="refGrid"></div>
+    </div>
+  </div>
+
+</div>
 
 <!-- SUCCESS TOAST -->
 <div class="success-flash" id="successFlash">
@@ -456,11 +565,11 @@ const chemDB = [
   // === BASES ===
   { spoken: ["sodium hydroxide","naoh","lye","caustic soda"], formula:"NaOH", html:"NaOH", name:"Sodium Hydroxide", cat:"Bases" },
   { spoken: ["potassium hydroxide","koh","caustic potash"], formula:"KOH", html:"KOH", name:"Potassium Hydroxide", cat:"Bases" },
-  { spoken: ["calcium hydroxide","ca oh two","slaked lime"], formula:"Ca(OH)₂", html:"Ca(OH)<sub>2</sub>", name:"Calcium Hydroxide", cat:"Bases" },
+  { spoken: ["calcium hydroxide","ca oh two","slaked lime","calcium dihydroxide","ca parenthesis oh two","ca oh subscript two"], formula:"Ca(OH)₂", html:"Ca(OH)<sub>2</sub>", name:"Calcium Hydroxide", cat:"Bases" },
   { spoken: ["ammonia","n h three","nh3"], formula:"NH₃", html:"NH<sub>3</sub>", name:"Ammonia", cat:"Bases" },
   { spoken: ["lithium hydroxide","lioh"], formula:"LiOH", html:"LiOH", name:"Lithium Hydroxide", cat:"Bases" },
-  { spoken: ["magnesium hydroxide","mg oh two","milk of magnesia"], formula:"Mg(OH)₂", html:"Mg(OH)<sub>2</sub>", name:"Magnesium Hydroxide", cat:"Bases" },
-  { spoken: ["barium hydroxide","ba oh two"], formula:"Ba(OH)₂", html:"Ba(OH)<sub>2</sub>", name:"Barium Hydroxide", cat:"Bases" },
+  { spoken: ["magnesium hydroxide","mg oh two","milk of magnesia","magnesium dihydroxide","mg parenthesis oh two"], formula:"Mg(OH)₂", html:"Mg(OH)<sub>2</sub>", name:"Magnesium Hydroxide", cat:"Bases" },
+  { spoken: ["barium hydroxide","ba oh two","barium dihydroxide","ba parenthesis oh two","ba oh subscript two"], formula:"Ba(OH)₂", html:"Ba(OH)<sub>2</sub>", name:"Barium Hydroxide", cat:"Bases" },
 
   // === SALTS ===
   { spoken: ["sodium chloride","table salt","salt","nacl"], formula:"NaCl", html:"NaCl", name:"Sodium Chloride", cat:"Salts" },
@@ -475,11 +584,19 @@ const chemDB = [
   { spoken: ["silver nitrate","agno three","agno3"], formula:"AgNO₃", html:"AgNO<sub>3</sub>", name:"Silver Nitrate", cat:"Salts" },
   { spoken: ["sodium nitrate","nano three","nano3","saltpeter"], formula:"NaNO₃", html:"NaNO<sub>3</sub>", name:"Sodium Nitrate", cat:"Salts" },
   { spoken: ["potassium nitrate","kno three","kno3"], formula:"KNO₃", html:"KNO<sub>3</sub>", name:"Potassium Nitrate", cat:"Salts" },
-  { spoken: ["ammonium chloride","nh four cl","nh4cl"], formula:"NH₄Cl", html:"NH<sub>4</sub>Cl", name:"Ammonium Chloride", cat:"Salts" },
-  { spoken: ["ammonium sulfate","nh four two so four"], formula:"(NH₄)₂SO₄", html:"(NH<sub>4</sub>)<sub>2</sub>SO<sub>4</sub>", name:"Ammonium Sulfate", cat:"Salts" },
+  { spoken: ["ammonium chloride","nh four cl","nh4cl","n h four cl","ammonium one chloride"], formula:"NH₄Cl", html:"NH<sub>4</sub>Cl", name:"Ammonium Chloride", cat:"Salts" },
+  { spoken: ["ammonium sulfate","nh four two so four","n h four two s o four","ammonium two sulfate","nh4 2 so4"], formula:"(NH₄)₂SO₄", html:"(NH<sub>4</sub>)<sub>2</sub>SO<sub>4</sub>", name:"Ammonium Sulfate", cat:"Salts" },
+  { spoken: ["iron three sulfate","fe two so four three","ferric sulfate","fe2so43","iron sulfate"], formula:"Fe₂(SO₄)₃", html:"Fe<sub>2</sub>(SO<sub>4</sub>)<sub>3</sub>", name:"Iron(III) Sulfate", cat:"Salts" },
+  { spoken: ["aluminum sulfate","al two so four three","alum sulfate","al2so43"], formula:"Al₂(SO₄)₃", html:"Al<sub>2</sub>(SO<sub>4</sub>)<sub>3</sub>", name:"Aluminum Sulfate", cat:"Salts" },
+  { spoken: ["iron three hydroxide","fe oh three","ferric hydroxide","fe parenthesis oh three"], formula:"Fe(OH)₃", html:"Fe(OH)<sub>3</sub>", name:"Iron(III) Hydroxide", cat:"Bases" },
+  { spoken: ["aluminum hydroxide","al oh three","al parenthesis oh three","antacid"], formula:"Al(OH)₃", html:"Al(OH)<sub>3</sub>", name:"Aluminum Hydroxide", cat:"Bases" },
+  { spoken: ["copper two hydroxide","cu oh two","cupric hydroxide","cu parenthesis oh two"], formula:"Cu(OH)₂", html:"Cu(OH)<sub>2</sub>", name:"Copper(II) Hydroxide", cat:"Bases" },
+  { spoken: ["lead two nitrate","pb no three two","lead nitrate","pb parenthesis no three two"], formula:"Pb(NO₃)₂", html:"Pb(NO<sub>3</sub>)<sub>2</sub>", name:"Lead(II) Nitrate", cat:"Salts" },
+  { spoken: ["calcium nitrate","ca no three two","ca parenthesis no three two"], formula:"Ca(NO₃)₂", html:"Ca(NO<sub>3</sub>)<sub>2</sub>", name:"Calcium Nitrate", cat:"Salts" },
+  { spoken: ["iron two hydroxide","fe oh two","ferrous hydroxide"], formula:"Fe(OH)₂", html:"Fe(OH)<sub>2</sub>", name:"Iron(II) Hydroxide", cat:"Bases" },
   { spoken: ["potassium permanganate","kmno four","kmno4"], formula:"KMnO₄", html:"KMnO<sub>4</sub>", name:"Potassium Permanganate", cat:"Salts" },
   { spoken: ["sodium phosphate","na three po four","na3po4"], formula:"Na₃PO₄", html:"Na<sub>3</sub>PO<sub>4</sub>", name:"Sodium Phosphate", cat:"Salts" },
-  { spoken: ["calcium phosphate","ca three po four two"], formula:"Ca₃(PO₄)₂", html:"Ca<sub>3</sub>(PO<sub>4</sub>)<sub>2</sub>", name:"Calcium Phosphate", cat:"Salts" },
+  { spoken: ["calcium phosphate","ca three po four two","ca three parenthesis po four two","tricalcium phosphate","calcium three phosphate two"], formula:"Ca₃(PO₄)₂", html:"Ca<sub>3</sub>(PO<sub>4</sub>)<sub>2</sub>", name:"Calcium Phosphate", cat:"Salts" },
   { spoken: ["iron two sulfate","feso four","feso4"], formula:"FeSO₄", html:"FeSO<sub>4</sub>", name:"Iron(II) Sulfate", cat:"Salts" },
   { spoken: ["zinc sulfate","znso four","znso4"], formula:"ZnSO₄", html:"ZnSO<sub>4</sub>", name:"Zinc Sulfate", cat:"Salts" },
 
@@ -520,6 +637,15 @@ const chemDB = [
 ];
 
 // =====================================================
+// DIFFICULTY SETS
+// =====================================================
+const diffSets = {
+  easy: chemDB.filter(c => ["Common","Elements","Oxides"].includes(c.cat) && c.spoken[0].length < 15),
+  medium: chemDB.filter(c => ["Acids","Bases","Salts"].includes(c.cat)),
+  hard: chemDB.filter(c => ["Organic","Salts","Acids"].includes(c.cat))
+};
+
+// =====================================================
 // STATE
 // =====================================================
 let recognition = null;
@@ -528,6 +654,18 @@ let recordingTarget = 'main'; // 'main' or 'quiz'
 let currentTranscript = '';
 let sessionHistory = [];
 let currentFormula = null;
+
+// Quiz state
+let quizDiff = 'easy';
+let quizMode = 'voice';
+let quizPool = [];
+let quizIndex = 0;
+let quizCorrect = 0;
+let quizWrong = 0;
+let quizStreak = 0;
+let quizCurrent = null;
+let quizAnswered = false;
+const QUIZ_LENGTH = 10;
 
 // =====================================================
 // SPEECH RECOGNITION SETUP
@@ -587,7 +725,7 @@ function toggleRecording(target) {
     isRecording = false;
     recognition.stop();
     const btn = target === 'main' ? document.getElementById('micBtn') : document.getElementById('quizMicBtn');
-    if (btn) btn.classList.remove('recording');
+    btn.classList.remove('recording');
     if (target === 'main') {
       document.getElementById('micStatus').textContent = 'Recording stopped. Click Convert to see formula.';
       document.getElementById('micStatus').className = 'mic-status';
@@ -598,8 +736,8 @@ function toggleRecording(target) {
     isRecording = true;
     currentTranscript = '';
     recognition.start();
-    const btn2 = target === 'main' ? document.getElementById('micBtn') : document.getElementById('quizMicBtn');
-    if (btn2) btn2.classList.add('recording');
+    const btn = target === 'main' ? document.getElementById('micBtn') : document.getElementById('quizMicBtn');
+    btn.classList.add('recording');
     if (target === 'main') {
       document.getElementById('micStatus').textContent = '🔴 Listening — speak now';
       document.getElementById('micStatus').className = 'mic-status active';
@@ -839,9 +977,241 @@ function copyText(text, btn) {
 }
 
 // =====================================================
+// QUIZ MODE
+// =====================================================
+function setDiff(d, el) {
+  quizDiff = d;
+  document.querySelectorAll('.diff-btn').forEach(b => { if(!b.id) b.classList.remove('active'); });
+  el.classList.add('active');
+  restartQuiz();
+}
+
+function setQuizMode(m, el) {
+  quizMode = m;
+  document.getElementById('modeVoice').classList.toggle('active', m==='voice');
+  document.getElementById('modeType').classList.toggle('active', m==='type');
+  document.getElementById('voiceInputArea').style.display = m==='voice' ? 'block' : 'none';
+  document.getElementById('typeInputArea').style.display = m==='type' ? 'block' : 'none';
+}
+
+function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i=a.length-1; i>0; i--) { const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+
+function restartQuiz() {
+  quizCorrect = 0; quizWrong = 0; quizStreak = 0; quizIndex = 0; quizAnswered = false;
+  updateScores();
+  const pool = diffSets[quizDiff] || chemDB;
+  quizPool = shuffleArray(pool).slice(0, QUIZ_LENGTH);
+  document.getElementById('quizEndScreen').classList.remove('show');
+  document.getElementById('quizCard').style.display = 'block';
+  loadQuestion();
+}
+
+function loadQuestion() {
+  if (quizIndex >= QUIZ_LENGTH || quizIndex >= quizPool.length) { endQuiz(); return; }
+  quizCurrent = quizPool[quizIndex];
+  quizAnswered = false;
+
+  // Progress
+  document.getElementById('quizProgressBar').style.width = (quizIndex/QUIZ_LENGTH*100)+'%';
+
+  // Display
+  document.getElementById('quizFormulaDisplay').innerHTML = quizCurrent.html;
+  document.getElementById('quizPromptLabel').textContent = 'Speak or type the NAME of this compound';
+  document.getElementById('quizHint').textContent = `Category: ${quizCurrent.cat}`;
+  document.getElementById('streakBadge').classList.remove('show');
+
+  // Clear result
+  const result = document.getElementById('quizResult');
+  result.className = 'quiz-result';
+  result.classList.remove('show');
+
+  // Clear answer
+  document.getElementById('quizAnswerArea').textContent = 'Press 🎤 and speak the compound name...';
+  document.getElementById('quizAnswerArea').className = 'quiz-answer-area';
+  document.getElementById('typeAnswer').value = '';
+
+  // Buttons
+  document.getElementById('checkBtn').style.display = 'inline-flex';
+  document.getElementById('nextBtn').style.display = 'none';
+  document.getElementById('skipBtn').style.display = 'inline-flex';
+
+  // Stop recording if going
+  if (isRecording && recordingTarget==='quiz') toggleRecording('quiz');
+  currentTranscript = '';
+}
+
+function checkQuizAnswer() {
+  if (quizAnswered) return;
+
+  let raw = '';
+  if (quizMode === 'voice') {
+    raw = document.getElementById('quizAnswerArea').textContent.trim();
+    if (!raw || raw.includes('Press 🎤') || raw==='Listening...') {
+      showToast('Speak your answer first!', '🎤', 'var(--accent4)'); return;
+    }
+  } else {
+    raw = document.getElementById('typeAnswer').value.trim();
+    if (!raw) { showToast('Type your answer first!', '⌨️', 'var(--accent4)'); return; }
+  }
+
+  if (isRecording && recordingTarget==='quiz') toggleRecording('quiz');
+  quizAnswered = true;
+
+  const norm = normalizeText(raw);
+  const correctNorm = normalizeText(quizCurrent.name);
+  const spokenMatches = quizCurrent.spoken.map(s => normalizeText(s));
+
+  const isCorrect = norm === correctNorm ||
+    spokenMatches.some(s => norm === s || s.includes(norm) || norm.includes(s)) ||
+    correctNorm.includes(norm) || norm.includes(correctNorm);
+
+  const result = document.getElementById('quizResult');
+  if (isCorrect) {
+    quizCorrect++; quizStreak++;
+    result.className = 'quiz-result correct show';
+    document.getElementById('resultIcon').textContent = '✅';
+    document.getElementById('resultMsg').textContent = 'Correct! ' + quizCurrent.name;
+    document.getElementById('resultDetail').textContent = 'Formula: ' + quizCurrent.formula;
+    playSuccessSound();
+    speakText("Correct! " + quizCurrent.name + ". Formula: " + formulaToSpoken(quizCurrent.formula));
+    if (quizStreak >= 3) {
+      const sb = document.getElementById('streakBadge');
+      sb.textContent = `🔥 ${quizStreak} in a row!`;
+      sb.classList.add('show');
+    }
+  } else {
+    quizWrong++; quizStreak = 0;
+    result.className = 'quiz-result wrong show';
+    document.getElementById('resultIcon').textContent = '❌';
+    document.getElementById('resultMsg').textContent = `The answer was: ${quizCurrent.name}`;
+    document.getElementById('resultDetail').textContent = `You said: "${raw}" · Formula: ${quizCurrent.formula}`;
+    playErrorSound();
+    speakText("The correct answer was: " + quizCurrent.name + ". Formula: " + formulaToSpoken(quizCurrent.formula));
+  }
+
+  updateScores();
+  document.getElementById('checkBtn').style.display = 'none';
+  document.getElementById('nextBtn').style.display = 'inline-flex';
+  document.getElementById('skipBtn').style.display = 'none';
+}
+
+function nextQuestion() {
+  quizIndex++;
+  loadQuestion();
+}
+
+function skipQuestion() {
+  quizIndex++;
+  loadQuestion();
+}
+
+function endQuiz() {
+  document.getElementById('quizCard').style.display = 'none';
+  const end = document.getElementById('quizEndScreen');
+  end.classList.add('show');
+  const total = quizCorrect + quizWrong;
+  const pct = total ? Math.round(quizCorrect/total*100) : 0;
+  document.getElementById('endScore').textContent = `${quizCorrect}/${total}`;
+  document.getElementById('endLabel').textContent = `${pct}% Correct`;
+  let grade = pct >= 90 ? '🌟 Outstanding!' : pct >= 75 ? '👍 Great job!' : pct >= 60 ? '📚 Keep practicing!' : '💪 Don\'t give up!';
+  document.getElementById('endGrade').textContent = grade;
+  document.getElementById('quizProgressBar').style.width = '100%';
+  if (pct >= 70) playSuccessSound();
+}
+
+function updateScores() {
+  document.getElementById('qCorrect').textContent = quizCorrect;
+  document.getElementById('qWrong').textContent = quizWrong;
+  document.getElementById('qStreak').textContent = quizStreak;
+}
+
+// =====================================================
+// REFERENCE TAB
+// =====================================================
+let refFilter = '';
+let refCat = 'All';
+const allCats = ['All', ...new Set(chemDB.map(c=>c.cat))];
+const catColors = { Common:'#00d4ff', Elements:'#00ff9d', Acids:'#ff6b6b', Bases:'#b388ff', Salts:'#ffd166', Oxides:'#ff9f40', Organic:'#4ecdc4' };
+
+function buildRefCats() {
+  const div = document.getElementById('refCats');
+  div.innerHTML = allCats.map(c => {
+    const col = catColors[c] || '#7a8fa6';
+    return `<span class="cat-badge" style="border-color:${col};color:${col}" onclick="setRefCat('${c}',this)">${c}</span>`;
+  }).join('');
+  div.firstChild.style.background = 'rgba(0,212,255,0.1)';
+}
+
+function setRefCat(cat, el) {
+  refCat = cat;
+  document.querySelectorAll('.cat-badge').forEach(b => b.style.background='');
+  const col = catColors[cat] || '#00d4ff';
+  el.style.background = `rgba(${hexToRgb(col)},0.12)`;
+  renderRef();
+}
+
+function hexToRgb(hex) {
+  const r=/^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return r ? `${parseInt(r[1],16)},${parseInt(r[2],16)},${parseInt(r[3],16)}` : '0,212,255';
+}
+
+function filterRef() {
+  refFilter = document.getElementById('refSearch').value.toLowerCase();
+  renderRef();
+}
+
+function renderRef() {
+  const grid = document.getElementById('refGrid');
+  const items = chemDB.filter(c => {
+    const matchCat = refCat==='All' || c.cat===refCat;
+    const matchSearch = !refFilter ||
+      c.name.toLowerCase().includes(refFilter) ||
+      c.formula.toLowerCase().includes(refFilter) ||
+      c.spoken.some(s=>s.includes(refFilter));
+    return matchCat && matchSearch;
+  });
+  if (!items.length) {
+    grid.innerHTML = '<div style="color:var(--muted);font-size:0.85rem;font-style:italic;grid-column:1/-1;">No results found.</div>';
+    return;
+  }
+  grid.innerHTML = items.map(c => `
+    <div class="ref-item" title="Say: ${c.spoken[0]}" onclick="useRefItem('${c.spoken[0]}')">
+      <span class="ref-spoken">"${c.spoken[0]}"</span>
+      <span class="ref-formula">${c.html}</span>
+    </div>`).join('');
+}
+
+function useRefItem(spoken) {
+  switchTab('dictate');
+  document.getElementById('transcriptBox').textContent = spoken;
+  document.getElementById('transcriptBox').className = 'transcript-box has-text';
+  currentTranscript = spoken;
+  convertAndShow();
+}
+
+// =====================================================
+// TAB NAVIGATION
+// =====================================================
+function switchTab(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  document.querySelectorAll('.tab-btn').forEach((b,i) => {
+    if (['dictate','quiz','reference'][i]===name) b.classList.add('active');
+  });
+  if (name==='quiz' && quizPool.length===0) restartQuiz();
+}
+
+// =====================================================
 // INIT
 // =====================================================
 initSpeech();
+buildRefCats();
+renderRef();
 </script>
 </body>
 </html>
